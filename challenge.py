@@ -1,7 +1,6 @@
 import requests
 import datetime
 import auth
-import example
 
 MAX_SEC = datetime.timedelta(seconds=300)
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -19,9 +18,6 @@ def apiGET():
         req.close()
         exit()
 
-def apiGETDummy():
-    return example.EXAMPLE
-
 def apiPOST(user_sessions):
     req = requests.post("https://api.slangapp.com/challenges/v1/activities/sessions",
     headers={"Authorization": auth.KEY}, # ← replace with your key
@@ -30,7 +26,7 @@ def apiPOST(user_sessions):
     status = req.status_code
 
     if (status == 204):
-        print('DONE!')
+        print('Content posted to API')
     else:
         print(status)
         req.close()
@@ -95,7 +91,7 @@ def build_user_sessions(data):
 
         user_sessions[user] = userActList
 
-    print(user_sessions)
+    # print(user_sessions)
     return user_sessions
 
 def strToDatetime(str):
