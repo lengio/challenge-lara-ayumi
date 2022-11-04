@@ -11,27 +11,30 @@ def apiGET():
     req = requests.get("https://api.slangapp.com/challenges/v1/activities", 
     headers={"Authorization": auth.KEY})
     
-    return req
-    # status = req.status_code
+    status = req.status_code
 
-    # if (status == 200):
-    #     return req
-    # else:
-    #     print(status)
-    #     req.close()
-    #     exit()
+    if (status == 200):
+        return req
+    else:
+        print(status)
+        req.close()
+        exit()
 
 def apiGETDummy():
     return example.EXAMPLE
 
 def apiPOST(user_sessions):
-    try:
-        requests.post("https://api.slangapp.com/challenges/v1/activities/sessions",
-        headers={"Authorization": auth.KEY}, # ← replace with your key
-        json=user_sessions) # Keep in mind this should be a dictionary {“user_sessions”: {...}}
+    req = requests.post("https://api.slangapp.com/challenges/v1/activities/sessions",
+    headers={"Authorization": auth.KEY}, # ← replace with your key
+    json=user_sessions) # Keep in mind this should be a dictionary {“user_sessions”: {...}}
+    
+    status = req.status_code
 
-    except Exception as e:
-        print(e.args[0])
+    if (status == 204):
+        print('DONE!')
+    else:
+        print(status)
+        req.close()
         exit()
 
 def build_user_sessions(data):
@@ -93,7 +96,6 @@ def build_user_sessions(data):
 
         user_sessions[user] = userActList
 
-
     print(user_sessions)
     return user_sessions
 
@@ -101,7 +103,6 @@ def strToDatetime(str):
     return datetime.datetime.strptime(str, DATETIME_FORMAT)
 
 if __name__ == "__main__":
-    # activities_response = apiGET()
-    # build_user_sessions(activities_response.json())
-
-    build_user_sessions(apiGETDummy())
+    activities_response = apiGET()
+    user_sessions = {"user_sessions": build_user_sessions(activities_response.json())}
+    apiPOST(user_sessions)
