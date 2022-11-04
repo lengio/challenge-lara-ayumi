@@ -1,6 +1,11 @@
 import requests
+import datetime
 import auth
 import example
+
+
+MAX_SEC = datetime.timedelta(seconds=300)
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 
 def apiGET():
     req = requests.get("https://api.slangapp.com/challenges/v1/activities", 
@@ -48,7 +53,52 @@ def build_user_sessions(data):
         q.append(obj)
         data_storage[activity["user_id"]] = q
     
-    print(data_storage)
+    user_sessions = {}
+    
+    for user in data_storage:
+        sortedlist = sorted(data_storage[user], key=lambda d: d["first_seen_at"]) # nlogn
+
+        # Logging logic
+        new_obj = {
+            "ended_at": sortedlist[0]["answered_at"],
+            "started_at": sortedlist[0]["first_seen_at"],
+            "activity_ids": [sortedlist[0]["id"]],
+        }
+
+        userActList = []
+        
+        for entry in sortedlist:
+            if(entry["id"] != sortedlist[0]["id"]):
+                elapsed_time = strToDatetime(entry["first_seen_at"]) - strToDatetime(new_obj["ended_at"])
+
+                if (elapsed_time > MAX_SEC):
+                    new_obj["duration_seconds"] = \
+                        (strToDatetime(new_obj["ended_at"]) - strToDatetime(new_obj["started_at"])).total_seconds()
+
+                    userActList.append(new_obj.copy())
+
+                    new_obj = {
+                        "ended_at": entry["answered_at"],
+                        "started_at": entry["first_seen_at"],
+                        "activity_ids": [entry["id"]]
+                    }
+                else:
+                    new_obj["activity_ids"].append(entry["id"])
+                    new_obj["ended_at"] = entry["answered_at"]
+
+        new_obj["duration_seconds"] = \
+            (strToDatetime(new_obj["ended_at"]) - strToDatetime(new_obj["started_at"])).total_seconds()
+
+        userActList.append(new_obj)
+
+        user_sessions[user] = userActList
+
+
+    print(user_sessions)
+    return user_sessions
+
+def strToDatetime(str):
+    return datetime.datetime.strptime(str, DATETIME_FORMAT)
 
 if __name__ == "__main__":
     # activities_response = apiGET()
