@@ -3,7 +3,6 @@ import datetime
 import auth
 import example
 
-
 MAX_SEC = datetime.timedelta(seconds=300)
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 
